@@ -5,18 +5,19 @@
 
 class ZMQReceiver {
 public:
-    ZMQReceiver(const std::string& address = "tcp://*:5555");
-    
-    // Recibe cara desde Python
-    // Retorna true si recibió correctamente
+    explicit ZMQReceiver(const std::string& address = "tcp://*:5555");
+
     bool receive(
-        cv::Mat& face,
-        int& faceId,
+        cv::Mat&     face,
+        int&         faceId,
         std::string& mode,
         std::string& personName
     );
 
 private:
     zmq::context_t context;
-    zmq::socket_t socket;
+    zmq::socket_t  socket;
+    bool           connected = false;
+
+    std::string parseJsonField(const std::string& json, const std::string& key);
 };

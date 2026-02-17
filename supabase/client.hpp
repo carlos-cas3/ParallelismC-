@@ -1,5 +1,4 @@
 #pragma once
-
 #include <string>
 #include <vector>
 #include <sys/socket.h>
@@ -7,9 +6,8 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <openssl/sha.h>
-#include <openssl/hmac.h>
-#include <openssl/buffer.h>
+#include <openssl/ssl.h>    // ← SSL real, no solo SHA/HMAC
+#include <openssl/err.h>
 
 class SupabaseClient {
 public:
@@ -27,22 +25,18 @@ public:
 private:
     std::string project_url;
     std::string api_key;
-    std::string project_ref;
+    std::string host;       // ← guardar host parseado una sola vez
 
-    std::string extractHostFromUrl(const std::string& url);
-    std::string extractPathFromUrl(const std::string& url);
     std::string vectorToArrayString(const std::vector<float>& vec);
     std::string escapeJson(const std::string& s);
 
-    std::string httpRequest(const std::string& method,
-                            const std::string& path,
-                            const std::string& body = "",
-                            const std::string& content_type = "application/json");
+    std::string httpsRequest(const std::string& method,
+                             const std::string& path,
+                             const std::string& body = "");
 
-    bool parseJsonResponse(const std::string& json,
-                          const std::string& field,
-                          std::string& result);
-    bool parseJsonArrayResponse(const std::string& json,
-                                std::vector<std::string>& results);
+    bool parseJsonField(const std::string& json,
+                        const std::string& field,
+                        std::string& result);
+    bool parseJsonArray(const std::string& json,
+                        std::vector<std::string>& results);
 };
-

@@ -32,11 +32,10 @@ std::vector<float> ArcFace::getEmbedding(const cv::Mat& face) {
     std::vector<float> embedding(out.ptr<float>(), out.ptr<float>() + 512);
     l2_normalize(embedding);
 
-std::cout << "[ArcFace] Embedding sample: ";
-for (int i = 0; i < 5; ++i)
-    std::cout << embedding[i] << " ";
-std::cout << "... size=" << embedding.size() << std::endl;
-
+    std::cout << "[ArcFace] Embedding sample: ";
+    for (int i = 0; i < 5; ++i)
+	    std::cout << embedding[i] << " ";
+    std::cout << "... size=" << embedding.size() << std::endl;
 
     return embedding;
 }
