@@ -3,6 +3,12 @@
 #include <vector>
 #include "http_client.hpp"
 
+struct MatchResult {
+    std::string person_id;
+    std::string name;
+    float score;
+};
+
 class EmbeddingRepo {
 public:
     EmbeddingRepo(HttpClient& http, const std::string& api_key);
@@ -10,8 +16,7 @@ public:
     bool        save(const std::string& person_id,
                      const std::vector<float>& embedding);
 
-    std::string findBestMatch(const std::vector<float>& embedding,
-                              float& best_score,
+    MatchResult findBestMatch(const std::vector<float>& embedding,
                               float threshold = 0.60f);
 
 private:

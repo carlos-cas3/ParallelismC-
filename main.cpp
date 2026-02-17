@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include "zmq/receiver.hpp"
+#include "zmq/sender.hpp"
 #include "arcface/arcface.hpp"
 #include "supabase/env_loader.hpp"
 #include "supabase/http_client.hpp"
@@ -32,6 +33,7 @@ int main() {
 
     std::cout << "[INIT] Iniciando receptor ZMQ...\n";
     ZMQReceiver receiver("tcp://*:5555");
+    ZMQSender sender("tcp://*:5556");
 
     std::cout << "\n[READY] Sistema listo. Esperando caras...\n";
     std::cout << "===========================================\n\n";
@@ -65,15 +67,38 @@ int main() {
             std::cout << (ok ? "[REGISTER] ✓ Guardado: " : "[REGISTER] ✗ Error: ")
                       << personName << "\n";
 
-        } else if (mode == "recognize") {
-            float score = 0.0f;
-            std::string name = embeddings.findBestMatch(embedding, score, 0.60f);
+            if (ok) {
+                std::string json = "{\"face_id\":" + std::to_string(faceId) +
+                                   ",\"person_id\":\"" + person_id + "\"" +
+                                   ",\"person_name\":\"" + personName + "\"" +
+                                   ",\"status\":\"registered\"}";
+                sender.send(json);
+                std::cout << "[REGISTER] Sent: " << json << "\n";
+            }
 
-            if (name == "DESCONOCIDO") {
-                std::cout << "[RECOGNIZE] ⚠ Persona no reconocida\n";
+        } else if (mode == "recognize") {
+            MatchResult match = embeddings.findBestMatch(embedding, 0.60f);
+
+            std::string json;
+            if (match.score >= 0.60f) {
+                json = "{\"face_id\":" + std::to_string(faceId) +
+                       ",\"person_id\":\"" + match.person_id + "\"" +
+                       ",\"person_name\":\"" + match.name + "\"" +
+                       ",\"confidence\":" + std::to_string(match.score) + "}";
+                std::cout << "[RECOGNIZE] ✓ Identificado: " << match.name
+                          << " (score=" << match.score << ")\n";
             } else {
-                std::cout << "[RECOGNIZE] ✓ Identificado: " << name
-                          << " (score=" << score << ")\n";
+                json = "{\"face_id\":" + std::to_string(faceId) +
+                       ",\"person_id\":\"\"" +
+                       ",\"person_name\":\"Desconocido\"" +
+                       ",\"confidence\":0.0}";
+                std::cout << "[RECOGNIZE] ⚠ Persona no reconocida\n";
+            }
+
+            if (sender.send(json)) {
+                std::cout << "[RECOGNIZE] Sent: " << json << "\n";
+            } else {
+                std::cerr << "[RECOGNIZE] Error enviando respuesta\n";
             }
 
         } else {
