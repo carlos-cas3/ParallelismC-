@@ -1,5 +1,6 @@
 *.txt
 !CMakeLists.txt
+!README.md
 build/
 *.onnx
 .env
