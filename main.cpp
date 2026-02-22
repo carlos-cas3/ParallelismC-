@@ -9,6 +9,7 @@
 #include "supabase/http_client.hpp"
 #include "supabase/person_repo.hpp"
 #include "supabase/embedding_repo.hpp"
+#include "supabase/face_quality.hpp"
 
 std::string g_url;
 std::string g_api_key;
@@ -41,7 +42,17 @@ void registerThread() {
         std::cout << "\n[REGISTER] FaceID=" << faceId
                   << " Name='" << personName << "'\n";
 
+        if (!FaceQualityAssessor::isValid(face)) {
+            std::cerr << "[REGISTER] Calidad insuficiente, omitiendo...\n";
+            continue;
+        }
+
         auto embedding = arcface.getEmbedding(face);
+
+        if (embedding.empty()) {
+            std::cerr << "[REGISTER] Error generando embedding, omitiendo...\n";
+            continue;
+        }
 
         if (personName.empty()) {
             std::cerr << "[REGISTER] Nombre vacío, omitiendo...\n";
@@ -96,11 +107,32 @@ void recognizeThread() {
 
         std::cout << "\n[RECOGNIZE] FaceID=" << faceId << "\n";
 
+        if (!FaceQualityAssessor::isValid(face)) {
+            std::cerr << "[RECOGNIZE] Calidad insuficiente, enviando Desconocido...\n";
+            std::string json = "{\"face_id\":" + std::to_string(faceId) +
+                               ",\"person_id\":\"\"" +
+                               ",\"person_name\":\"Desconocido\"" +
+                               ",\"confidence\":0.0}";
+            sender.send(json);
+            continue;
+        }
+
         auto embedding = arcface.getEmbedding(face);
-        MatchResult match = embeddings.findBestMatch(embedding, 0.60f);
+
+        if (embedding.empty()) {
+            std::cerr << "[RECOGNIZE] Error generando embedding, enviando Desconocido...\n";
+            std::string json = "{\"face_id\":" + std::to_string(faceId) +
+                               ",\"person_id\":\"\"" +
+                               ",\"person_name\":\"Desconocido\"" +
+                               ",\"confidence\":0.0}";
+            sender.send(json);
+            continue;
+        }
+
+        MatchResult match = embeddings.findBestMatch(embedding, 0.70f);
 
         std::string json;
-        if (match.score >= 0.60f) {
+        if (match.score >= 0.70f) {
             json = "{\"face_id\":" + std::to_string(faceId) +
                    ",\"person_id\":\"" + match.person_id + "\"" +
                    ",\"person_name\":\"" + match.name + "\"" +

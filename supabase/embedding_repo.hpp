@@ -17,7 +17,7 @@ public:
                      const std::vector<float>& embedding);
 
     MatchResult findBestMatch(const std::vector<float>& embedding,
-                              float threshold = 0.60f);
+                              float threshold = 0.70f);
 
 private:
     HttpClient& http;
