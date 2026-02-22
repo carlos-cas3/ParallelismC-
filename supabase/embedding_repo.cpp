@@ -30,6 +30,8 @@ MatchResult EmbeddingRepo::findBestMatch(
         ",\"match_threshold\":"  + std::to_string(threshold) +
         ",\"match_count\":5}";
 
+    std::cout << "[EmbeddingRepo] findBestMatch threshold=" << threshold << "\n";
+
     std::string response = http.request(
         "POST", "/rest/v1/rpc/match_person", api_key, body
     );

@@ -14,6 +14,7 @@ set(SUPABASE_SOURCES
     supabase/json_utils.cpp
     supabase/person_repo.cpp
     supabase/embedding_repo.cpp
+    supabase/face_quality.cpp
 )
 
 # --- Ejecutable principal ---

@@ -11,4 +11,5 @@ public:
 
 private:
     cv::dnn::Net net;
+    float l2_normalize_safe(std::vector<float>& v);
 };
