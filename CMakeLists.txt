@@ -37,10 +37,6 @@ set(COMMON_SRC
 add_executable(face_mpi main_mpi.cpp mpi/master.cpp mpi/worker.cpp ${COMMON_SRC})
 target_link_libraries(face_mpi ${OpenCV_LIBS} cppzmq OpenSSL::SSL OpenSSL::Crypto Threads::Threads ${MPI_CXX_LIBRARIES})
 
-# Standalone sin MPI
-add_executable(face_receiver main.cpp ${COMMON_SRC})
-target_link_libraries(face_receiver ${OpenCV_LIBS} cppzmq OpenSSL::SSL OpenSSL::Crypto Threads::Threads)
-
 set(MODEL ${CMAKE_SOURCE_DIR}/public/face-recognition-resnet100-arcface-onnx/arcfaceresnet100-8.onnx)
 if(NOT EXISTS ${MODEL})
     file(DOWNLOAD https://media.githubusercontent.com/media/onnx/models/bb0d4cf3d4e2a5f7376c13a08d337e86296edbe8/vision/body_analysis/arcface/model/arcfaceresnet100-8.onnx ${MODEL} SHOW_PROGRESS)

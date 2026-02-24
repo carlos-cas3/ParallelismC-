@@ -2,7 +2,6 @@
 #include <mpi.h>
 #include <string>
 #include "core/face_processor.hpp"
-#include "threading/thread_pool.hpp"
 
 class WorkerNode {
 public:
