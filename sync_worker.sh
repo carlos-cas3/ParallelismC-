@@ -5,7 +5,7 @@
 
 WORKER=$1
 USER=$(whoami)
-PROJECT_DIR="zmq_test"
+PROJECT_DIR=$(basename "$PWD")
 
 if [ -z "$WORKER" ]; then
     echo "Uso: ./sync_worker.sh <hostname>"
@@ -13,13 +13,14 @@ if [ -z "$WORKER" ]; then
     echo ""
     echo "Workers configurados actualmente:"
     if [ -f "hosts.txt" ]; then
-        grep -v "^#" hosts.txt | grep -v "^$" | awk '{print "  - " $1 " (slots=" $2 ")"}'
+        grep -v "^#" hosts.txt | grep -v "^$" | awk -F' slots=' '{print "  - " $1 " (slots=" $2 ")"}'
     fi
     exit 1
 fi
 
 echo "=========================================="
-echo "  Sincronizando con worker: $WORKER"
+echo "  Sincronizando proyecto: $PROJECT_DIR"
+echo "  Con worker: $WORKER"
 echo "=========================================="
 
 # Verificar que el ejecutable existe
