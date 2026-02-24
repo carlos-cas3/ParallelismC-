@@ -42,31 +42,27 @@ if [ ! -f ".env" ]; then
     exit 1
 fi
 
-# 1. Instalar dependencias en el worker
+# 1. Copiar install_deps.sh al worker
 echo ""
-echo "[1/5] Instalando dependencias en $WORKER..."
-ssh -o StrictHostKeyChecking=no $USER@$WORKER "sudo apt-get update && sudo apt-get install -y \
-    build-essential cmake libopencv-dev libzmq3-dev libssl-dev \
-    openmpi-bin libopenmpi-dev" 2>/dev/null || {
-    echo "WARNING: No se pudieron instalar dependencias automáticamente"
-    echo "         Instalar manualmente en $WORKER: ./install_deps.sh"
-}
+echo "[1/5] Copiando script de instalación..."
+scp install_deps.sh $USER@$WORKER:~/$PROJECT_DIR/
 
-# 2. Crear directorio remoto
-echo "[2/5] Creando directorio en worker..."
+# 2. Ejecutar install_deps.sh en el worker
+echo "[2/5] Instalando dependencias en $WORKER..."
+ssh -o StrictHostKeyChecking=no $USER@$WORKER "cd ~/$PROJECT_DIR && chmod +x install_deps.sh && sudo ./install_deps.sh"
+
+# 3. Crear directorio remoto
+echo "[3/5] Creando directorio en worker..."
 ssh $USER@$WORKER "mkdir -p ~/$PROJECT_DIR/{build_mpi,public}"
 
-# 3. Copiar ejecutable compilado
-echo "[3/5] Copiando ejecutable..."
+# 4. Copiar ejecutable compilado
+echo "[4/5] Copiando ejecutable..."
 scp build_mpi/face_mpi $USER@$WORKER:~/$PROJECT_DIR/build_mpi/
 
-# 4. Copiar modelo ONNX
-echo "[4/5] Copiando modelo ONNX..."
+# 5. Copiar modelo ONNX
+echo "[5/5] Copiando modelo ONNX y credenciales..."
 scp -r public/face-recognition-resnet100-arcface-onnx \
     $USER@$WORKER:~/$PROJECT_DIR/public/
-
-# 5. Copiar credenciales
-echo "[5/5] Copiando credenciales..."
 scp .env $USER@$WORKER:~/$PROJECT_DIR/
 
 echo ""
