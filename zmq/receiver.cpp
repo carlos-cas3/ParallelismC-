@@ -39,21 +39,44 @@ std::string ZMQReceiver::parseJsonField(
     }
 }
 
+// OPTIMIZACION: receive ahora usa ZMQ poll con timeout
+// Esto evita que el hilo se quede esperando infinitamente
 bool ZMQReceiver::receive(
     cv::Mat&     face,
     int&         faceId,
     std::string& mode,
-    std::string& personName
+    std::string& personName,
+    int          timeoutMs
 ) {
     if (!connected) {
         std::cerr << "[ZMQ] Socket not connected\n";
         return false;
     }
 
+    // OPTIMIZACION: Usar poll() en lugar de recv() directo
+    // poll() permite timeout y no bloquea infinitamente
+    zmq::pollitem_t items[] = {
+        { static_cast<void*>(socket), 0, ZMQ_POLLIN, 0 }
+    };
+
+    // poll con timeout - retorna 0 si timeout, >0 si hay datos
+    int rc = zmq::poll(items, 1, timeoutMs);
+    
+    if (rc == 0) {
+        // Timeout - no hay mensaje, retornar false inmediatamente
+        return false;
+    }
+    
+    if (rc < 0) {
+        // Error en poll
+        return false;
+    }
+
+    // Hay datos disponibles, recibir mensaje
     zmq::message_t message;
     auto result = socket.recv(message, zmq::recv_flags::none);
     if (!result || message.size() < 5) {
-        std::cerr << "[ZMQ] Mensaje inválido\n";
+        // std::cerr << "[ZMQ] Mensaje inválido o vacío\n";
         return false;
     }
 

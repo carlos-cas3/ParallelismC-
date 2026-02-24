@@ -125,10 +125,21 @@ std::string HttpClient::request(
 
     // Separar headers y body
     size_t sep = response.find("\r\n\r\n");
-    if (sep == std::string::npos) return response;
+    if (sep == std::string::npos) {
+        std::cout << "[HTTP] Response (no headers): " << response.substr(0, 200) << "\n";
+        return response;
+    }
 
     std::string headers  = response.substr(0, sep);
     std::string raw_body = response.substr(sep + 4);
+
+    // Extraer código de estado HTTP
+    std::smatch m;
+    if (std::regex_search(headers, m, std::regex("HTTP/[\\d.]+ (\\d+)"))) {
+        std::cout << "[HTTP] Status: " << m[1].str() << "\n";
+    }
+    
+    std::cout << "[HTTP] Response body: " << raw_body.substr(0, 300) << "\n";
 
     // Decodificar chunked si es necesario
     if (headers.find("Transfer-Encoding: chunked") != std::string::npos)

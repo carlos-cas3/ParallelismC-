@@ -7,11 +7,14 @@ class ZMQReceiver {
 public:
     explicit ZMQReceiver(const std::string& address = "tcp://*:5555");
 
+    // receive con timeout (no bloquea infinitamente)
+    // timeout en milisegundos, -1 para bloque infinito (comportamiento original)
     bool receive(
         cv::Mat&     face,
         int&         faceId,
         std::string& mode,
-        std::string& personName
+        std::string& personName,
+        int          timeoutMs = 100
     );
 
 private:
