@@ -30,9 +30,9 @@ FaceQuality FaceQualityAssessor::assess(const cv::Mat& face) {
     cv::meanStdDev(gray, mean_gray, stddev_gray);
     q.contrast = std::min(1.0f, static_cast<float>(stddev_gray[0]) / 80.0f);
 
-    q.valid = (q.sharpness > 0.15f) &&
-              (q.brightness > 0.15f) && (q.brightness < 0.95f) &&
-              (q.contrast > 0.15f);
+    q.valid = (q.sharpness > 0.10f) &&
+              (q.brightness > 0.10f) && (q.brightness < 0.95f) &&
+              (q.contrast > 0.10f);
 
     return q;
 }
