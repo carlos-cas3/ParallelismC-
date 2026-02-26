@@ -1,8 +1,13 @@
-# Instalación y Ejecución
+# Face Recognition MPI
 
-Este proyecto requiere instalar dependencias, compilar y configurar variables de entorno antes de ejecutarse.
+Sistema de reconocimiento facial distribuido usando MPI, ZeroMQ y Supabase.
 
-## Pasos
+## Requisitos
+
+- Ubuntu 20.04+ o similar
+- Acceso a internet (para modelo y Supabase)
+
+## Instalación y Ejecución
 
 ### 1. Clonar el repositorio
 
@@ -20,32 +25,71 @@ cd ParallelismC-
 ### 3. Compilar el proyecto
 
 ```bash
-./build.sh
+./build.sh --mpi
 ```
 
-### 4. Crear el archivo `.env`
+### 4. Configurar credenciales
 
-Crear el archivo en la raíz del proyecto:
+Editar el archivo `.env` con tus credenciales de Supabase:
 
 ```bash
-touch .env
+SUPABASE_URL=tu_url_supabase
+SUPABASE_KEY=tu_api_key_supabase
 ```
 
-Luego editarlo y agregar las variables necesarias.
+### 5. Configurar workers (opcional)
 
-### 5. Ejecutar la aplicación
+Para agregar workers, editar `hosts.txt` y luego:
 
 ```bash
-./build/face_receiver
+./sync_worker.sh client1
+```
+
+### 6. Ejecutar
+
+```bash
+# Modo local (1 master + workers locales)
+mpirun --oversubscribe -np 4 build_mpi/face_mpi
+
+# Con workers remotos (editar hosts.txt primero)
+mpirun --hostfile hosts.txt -np 4 build_mpi/face_mpi
 ```
 
 ---
 
-## Notas
+## Estructura del Proyecto
 
-- Si no se puede ejecutar los scripts actualizar los permisos:
+```
+├── build_mpi/         # Ejecutable compilado
+├── mpi/               # Código Master y Worker
+├── core/              # Procesamiento de caras
+├── supabase/          # Conexión a Supabase
+├── zmq/               # Comunicación ZMQ
+├── public/            # Modelo ONNX
+├── hosts.txt          # Configuración de workers
+├── build.sh           # Compilar
+├── install_deps.sh    # Instalar dependencias
+└── sync_worker.sh    # Sincronizar workers
+```
+
+---
+
+## Scripts Disponibles
+
+| Script | Descripción |
+|--------|-------------|
+| `./build.sh` | Compilar versión MPI |
+| `./build.sh --standalone` | Compilar sin MPI |
+| `./build.sh --clean` | Limpiar build |
+| `./install_deps.sh` | Instalar dependencias |
+| `./sync_worker.sh <host>` | Sincronizar con worker |
+
+---
+
+## Permisos
+
+Si los scripts no se ejecutan, actualizar permisos:
 
 ```bash
-chmod +x install_deps.sh
-chmod +x build.sh
+chmod +x install_deps.sh build.sh sync_worker.sh
 ```

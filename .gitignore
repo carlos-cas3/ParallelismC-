@@ -2,6 +2,7 @@
 !CMakeLists.txt
 !README.md
 build/
+build_mpi/
 *.onnx
 .env
 build.sh
